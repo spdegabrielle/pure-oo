@@ -1,0 +1,10 @@
+# Racket temp files #
+#################
+*.rkt~
+*.rkt#1#
+# backups
+*~
+# autosaves (note the #-quoting)
+\#*
+# OSX junk
+.DS_Store
