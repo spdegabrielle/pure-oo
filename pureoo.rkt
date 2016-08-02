@@ -65,8 +65,7 @@
 (define (make-dispatcher message-map)
   (define (dispatcher selector . args)
     (cond
-      ((eq? selector 'slots) (map (λ (message-pair) (car message-pair))
-                                  message-map))
+      ((eq? selector 'slots) (map (λ (message-pair) (car message-pair)) message-map))
       ((eq? selector 'mmap) message-map)
       ((assq selector message-map) =>
                                    (lambda (handler-ass)
@@ -90,6 +89,12 @@
   (define message-map
     `((me . ,(lambda (self) (list self "core-object")))
       (parent* . ,(lambda (self) (self 'me))) ; an example of sending a message to myself
+
+      (clone . ,(lambda (self new-slots)
+                  (list
+                   (make-dispatcher
+                    (new-mmap (self 'mmap) 'get-x
+                              (lambda (self) (list self new-x)))))))
       ))
   (make-dispatcher message-map))
 
