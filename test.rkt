@@ -21,9 +21,7 @@
                      (new-mmap (self 'mmap) 'get-y
                                (lambda (self) (list self new-y)))))))
        (identity . ,(lambda (self) (list self my-identity)))
-       ;(parent* . ,(lambda (self) (list self "point-2D")))
-       ;(of-class . ,(lambda (self) (self 'parent*))) ; an example of
-       ; sending a message to myself
+       (me . ,(lambda (self) (list self "point-2D")))
        )
      ((core-obj) 'mmap)))
   (make-dispatcher message-map))
@@ -46,7 +44,7 @@
 (define p1 (make-point-2D 5 6))
 
 (displayln "test output")
-(p1 'of-class) ; ==> (#<procedure p1> "point-2D")
+(p1 'parent*) ; ==> (#<procedure p1> "point-2D")
 (p 'get-x)     ; ==> (#<procedure p> 5)
 (p1 'get-x)    ; ==> (#<procedure p1> 5)
 
@@ -84,7 +82,7 @@
                     (make-dispatcher
                      (new-mmap (self 'mmap) 'get-z
                                (lambda (self) (list self new-z)))))))
-       (parent* . ,(lambda (self) (list self "point-3D")))
+       (me . ,(lambda (self) (list self "point-3D")))
        )
      ((make-point-2D x y) 'mmap)))	; the superclass
 
@@ -105,7 +103,7 @@
   (append (print-x-y obj) (cdr (obj 'get-z))))
 ; ==> ("point-3D" 11 2 12) 
 
-(q 'of-class)
+(q 'parent*)
 ; ==> (#<procedure q> "point-3D") ; notice polymorphism!!!
 ; The of-class method is implemented in point-2D yet the result is
 ; "point-3D". This is because the 'of-class method sends the message

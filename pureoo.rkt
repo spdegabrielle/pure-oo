@@ -88,9 +88,8 @@
 (define (core-obj)
   (define (my-identity) message-map)
   (define message-map
-    `((parent* . ,(lambda (self) (list self "core-object")))
-      (of-class . ,(lambda (self) (self 'parent*))) ; an example of
-      ; sending a message to myself
+    `((me . ,(lambda (self) (list self "core-object")))
+      (parent* . ,(lambda (self) (self 'me))) ; an example of sending a message to myself
       ))
   (make-dispatcher message-map))
 
