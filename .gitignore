@@ -2,6 +2,8 @@
 #################
 *.rkt~
 *.rkt#1#
+*.dep
+*.zo
 # backups
 *~
 # autosaves (note the #-quoting)
