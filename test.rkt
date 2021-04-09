@@ -1,31 +1,28 @@
-#lang racket
-(require "pureoo.rkt")
+#lang racket/gui
+(require 2htdp/image "pureoo.rkt")
 
 ; point-2D object and its constructor
 
 (define (make-point-2D x y)
   (define (my-identity) message-map)
   (define message-map
-    (append
-     `((get-x . ,(lambda (self) (list self x)))
-       (get-y . ,(lambda (self) (list self y)))
-       (set-x . ,(lambda (self new-x)
-                   (list
-                    (make-dispatcher
-                     (new-mmap (self 'mmap) 'get-x
-                               (lambda (self) (list self new-x)))))))
-
-       (set-y . ,(lambda (self new-y)
-                   (list
-                    (make-dispatcher
-                     (new-mmap (self 'mmap) 'get-y
-                               (lambda (self) (list self new-y)))))))
-       (identity . ,(lambda (self) (list self my-identity)))
-       (me . ,(lambda (self) (list self "point-2D")))
-       )
-     ((core-obj) 'mmap)))
+    `((get-x . ,(lambda (self) (list self x)))
+      (get-y . ,(lambda (self) (list self y)))
+      (set-x . ,(lambda (self new-x)
+		  (list
+		   (make-dispatcher
+		    (new-mmap (self 'mmap) 'get-x
+			      (lambda (self) (list self new-x)))))))
+      (set-y . ,(lambda (self new-y)
+		  (list
+		   (make-dispatcher
+		    (new-mmap (self 'mmap) 'get-y
+			      (lambda (self) (list self new-y)))))))
+      (identity . ,(lambda (self) (list self my-identity)))
+      (my-class . ,(lambda (self) (list self "point-2D")))
+      (of-class . ,(lambda (self) (self 'my-class))) ; an example of sending a message to myself
+      ))
   (make-dispatcher message-map))
-
 
 (define (print-x-y obj)
   ;; rev-apply make this easier to read
@@ -38,13 +35,14 @@
                                        (lambda (obj parent*)
                                          (list parent* x y))))))))
 
-(displayln "test output")
+(displayln "test output 1")
 (displayln "define p and p1")
 (define p (make-point-2D 5 6))
 (define p1 (make-point-2D 5 6))
 
-(displayln "test output")
-(p1 'parent*) ; ==> (#<procedure p1> "point-2D")
+(displayln "test output 2")
+(p1 'of-class) ; ==> (#<procedure p1> "point-2D")
+(p1 'parent*)
 (p 'get-x)     ; ==> (#<procedure p> 5)
 (p1 'get-x)    ; ==> (#<procedure p1> 5)
 

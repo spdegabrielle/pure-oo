@@ -1,5 +1,5 @@
 #lang racket
-(provide make-dispatcher new-mmap core-obj)
+(provide make-dispatcher new-mmap)
 ; a simple direct port of http://okmij.org/ftp/Scheme/#pure-oo ...
 ;
 ; 	Purely-functional Object-Oriented System in Scheme
@@ -39,6 +39,7 @@
 
 
 ; A functional substitution in a assoc list
+;; new-mmap : mmap tag new-body > mmap*
 (define (new-mmap mmap tag new-body)
   (cond
     ((null? mmap) '())
@@ -46,55 +47,32 @@
      (cons (cons tag new-body) (cdr mmap)))
     (else (cons (car mmap) (new-mmap (cdr mmap) tag new-body)))))
 
+; This function makes a new dispatcher closure -- a new object: a dispatcher _is_ an object.
+; A message map is a list of associations of message selectors with message handlers.
+; A message selector is a symbol.
+; A message handler is a procedure.
+; It should take the dispatcher (i.e., _self_) as the first argument, and message's arguments as other parameters, if any.
+; Every object always accepts a message 'mmap and replies with its message map.
+; This feature is used to create an object with a new state, and to implement a delegation-based inheritance (see make-point-3D below).
+; The similarity between the two runs deeper: an object with a changed state is in a sense a "child" of the original object.
 
-
-; This function makes a new dispatcher closure -- a new
-; object: a dispatcher _is_ an object.
-; A message map is a list of associations of message
-; selectors with message handlers. A message selector
-; is a symbol. A message handler is a procedure. It should
-; take the dispatcher (i.e., _self_) as the first argument,
-; and message's arguments as other parameters, if any.
-; Every object always accepts a message 'mmap and replies with
-; its message map. This feature is used to create an
-; object with a new state, and to implement a delegation-based
-; inheritance (see make-point-3D below). The similarity
-; between the two runs deeper: an object with a changed state
-; is in a sense a "child" of the original object.
 ;; make-dispatcher : message-map > 
 (define (make-dispatcher message-map)
   (define (dispatcher selector . args)
     (cond
       ((eq? selector 'slots) (map (λ (message-pair) (car message-pair)) message-map))
       ((eq? selector 'mmap) message-map)
-      ((assq selector message-map) =>
-                                   (lambda (handler-ass)
-                                     (apply (cdr handler-ass) (cons dispatcher args))))
+      ((assq selector message-map) => (lambda (handler-ass)
+                                        (apply (cdr handler-ass) (cons dispatcher args))))
       ((eq? selector 'parent*) (list dispatcher "UNKNOWN")) ; if wasn't defined
-      (else						     ; in message-map
+      (else						    ; in message-map
        (raise-argument-error (string->symbol (cadr (dispatcher 'parent*)))
                              (format ":~a:" (map (λ (message-pair) (car message-pair))
                                                  message-map))
                              0
                              selector
-                             ))
-      ))
+                             ))))
   dispatcher)
 
 
-;make core-object object
-;; core-obj > core-obj
-(define (core-obj)
-  (define (my-identity) message-map)
-  (define message-map
-    `((me . ,(lambda (self) (list self "core-object")))
-      (parent* . ,(lambda (self) (self 'me))) ; an example of sending a message to myself
-
-      (clone . ,(lambda (self new-slots)
-                  (list
-                   (make-dispatcher
-                    (new-mmap (self 'mmap) 'get-x
-                              (lambda (self) (list self new-x)))))))
-      ))
-  (make-dispatcher message-map))
 
